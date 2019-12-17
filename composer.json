@@ -1,0 +1,14 @@
+{
+    "name": "banqhsia/twse-alert",
+    "authors": [
+        {
+            "name": "Benyi",
+            "email": "banqhsia@gmail.com"
+        }
+    ],
+    "require": {
+        "guzzlehttp/guzzle": "^6.5",
+        "illuminate/support": "^6.7",
+        "symfony/var-dumper": "^5.0"
+    }
+}
