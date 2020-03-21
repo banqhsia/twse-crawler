@@ -71,11 +71,21 @@ class StockInfo
         return $this->retrieveInfo('o');
     }
 
+    /**
+     * 取得昨日收盤價
+     *
+     * @return string
+     */
     public function getYesterdayClosePrice()
     {
         return $this->retrieveInfo('y');
     }
 
+    /**
+     * 取得漲跌幅
+     *
+     * @return float
+     */
     public function getIncreasePercentage()
     {
         return round(
@@ -83,9 +93,14 @@ class StockInfo
         );
     }
 
+    /**
+     * 取得漲跌價格
+     *
+     * @return float
+     */
     public function getIncreasePrice()
     {
-        return $this->getPrice() - $this->getYesterdayClosePrice();
+        return (float) $this->getPrice() - $this->getYesterdayClosePrice();
     }
 
     /**
