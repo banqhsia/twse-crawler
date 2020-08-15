@@ -1,10 +1,11 @@
 <?php
 
-namespace App;
+namespace App\Quote;
 
+use App\Quote\StockInfo;
 use Illuminate\Support\Arr;
 
-class StockInfo
+class TwseStockInfo implements StockInfo
 {
     /**
      * @var array
