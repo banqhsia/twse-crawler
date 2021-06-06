@@ -2,6 +2,7 @@
 
 namespace App;
 
+use App\Provider\Optionable;
 use GuzzleHttp\Client as BaseClient;
 use Psr\Http\Message\ResponseInterface;
 
@@ -65,7 +66,19 @@ class Client
      */
     public function get($provider)
     {
-        $response = $this->client->get($provider->getUrl());
+        $method = 'get';
+        $options = [];
+
+        if ($provider instanceof Optionable) {
+            $options = $provider->getOptions();
+            $method = $provider->getMethod();
+        }
+
+        $response = $this->client->request(
+            $method,
+            $provider->getUrl(),
+            $options
+        );
 
         return call_user_func($provider->getDecodeFunction(), $response);
     }
