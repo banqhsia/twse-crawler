@@ -3,14 +3,18 @@
 namespace App\Provider\Options;
 
 use App\Provider\Optionable;
-use App\Quote\Options\TaifexFuturesInfo;
+use App\Quote\Options\TaifexInstitutionInfo;
 use Carbon\CarbonPeriod;
 use Psr\Http\Message\ResponseInterface;
 
-class TaifexFuturesProvider implements Optionable
+class TaifexInstitutionProvider implements Optionable
 {
-    const URL_BASE = 'https://www.taifex.com.tw/cht/3/futDataDown';
-    const DOWN_TYPE = 1;
+    const URL_BASE = 'https://www.taifex.com.tw/cht/3/futContractsDateDown';
+
+    /**
+     * @var string
+     */
+    private $symbol = '';
 
     /**
      * @var CarbonPeriod
@@ -18,9 +22,19 @@ class TaifexFuturesProvider implements Optionable
     private $period;
 
     /**
-     * @var string
+     * Set the symbol.
+     *
+     * @param string $symbol
+     * @return $this
+     *
+     * @see https://www.taifex.com.tw/cht/3/futContractsDate dropdown list.
      */
-    private $symbol = '';
+    public function setSymbol($symbol)
+    {
+        $this->symbol = $symbol;
+
+        return $this;
+    }
 
     /**
      * Set the date period of the query.
@@ -31,21 +45,6 @@ class TaifexFuturesProvider implements Optionable
     public function setDatePeriod(CarbonPeriod $period)
     {
         $this->period = $period;
-
-        return $this;
-    }
-
-    /**
-     * Set the symbol.
-     *
-     * @param string $symbol
-     * @return $this
-     *
-     * @see https://www.taifex.com.tw/cht/3/futDailyMarketReport dropdown list.
-     */
-    public function setSymbol($symbol)
-    {
-        $this->symbol = $symbol;
 
         return $this;
     }
@@ -65,11 +64,12 @@ class TaifexFuturesProvider implements Optionable
     {
         return [
             'form_params' => [
-                'down_type' => static::DOWN_TYPE,
-                'commodity_id' => $this->symbol,
-                'commodity_id2' => '',
+                /** Not sure if this 2 columns are needed */
+                // 'firstDate' => '2018/06/04+00:00',
+                // 'lastDate' => '2021/06/04+00:00',
                 'queryStartDate' => $this->period->getStartDate()->format('Y/m/d'),
                 'queryEndDate' => $this->period->getEndDate()->format('Y/m/d'),
+                'commodityId' => $this->symbol,
             ],
         ];
     }
@@ -87,10 +87,9 @@ class TaifexFuturesProvider implements Optionable
             return collect($exploded)
                 ->filter(\Closure::fromCallable([$this, 'isLineValid']))
                 ->transform(function ($line) {
-                    $line = mb_convert_encoding($line, 'UTF-8', 'BIG-5');
-                    $exploded = array_filter(explode(",", $line));
+                    $exploded = explode(",", mb_convert_encoding($line, 'UTF-8', 'big-5'));
 
-                    return new TaifexFuturesInfo($exploded);
+                    return new TaifexInstitutionInfo($exploded);
                 })
                 ->values()
                 ->toArray();
@@ -103,9 +102,10 @@ class TaifexFuturesProvider implements Optionable
      * @param string $line
      * @return bool
      */
-    protected function isLineValid($line)
+    protected function isLineValid($line, $index)
     {
-        return mb_detect_encoding($line, 'UTF-8') && !empty($line);
+        /** index [0] is the title of csv response. */
+        return (0 !== $index) && !empty($line);
     }
 
     /**
