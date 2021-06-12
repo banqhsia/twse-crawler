@@ -4,6 +4,7 @@ namespace App\Provider\Options;
 
 use App\Provider\Optionable;
 use App\Quote\Options\TaifexFuturesInfo;
+use Carbon\CarbonImmutable;
 use Carbon\CarbonPeriod;
 use Psr\Http\Message\ResponseInterface;
 
@@ -20,7 +21,7 @@ class TaifexFuturesProvider implements Optionable
     /**
      * @var string
      */
-    private $symbol = '';
+    private $symbol;
 
     /**
      * Set the date period of the query.
@@ -33,6 +34,21 @@ class TaifexFuturesProvider implements Optionable
         $this->period = $period;
 
         return $this;
+    }
+
+    /**
+     * Set the date of the query.
+     *
+     * @param string|\DateTimeImmutable|CarbonImmutable $date
+     * @return $this
+     */
+    public function setDate($date)
+    {
+        if (!$date instanceof CarbonImmutable) {
+            $date = CarbonImmutable::parse($date);
+        }
+
+        return $this->setDatePeriod($date->toPeriod($date));
     }
 
     /**

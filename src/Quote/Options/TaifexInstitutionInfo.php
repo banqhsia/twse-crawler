@@ -3,9 +3,19 @@
 namespace App\Quote\Options;
 
 use Carbon\Carbon;
+use Illuminate\Support\Arr;
+use Illuminate\Support\Str;
 
 class TaifexInstitutionInfo
 {
+    /**
+     * @var array<string,string>
+     */
+    protected $institutionAlias = [
+        "外資及陸資" => "外資",
+        "自營商" => "自營",
+    ];
+
     /**
      * @var string[]
      */
@@ -32,21 +42,43 @@ class TaifexInstitutionInfo
     }
 
     /**
-     * Get the name of commodity. E.g. "臺股期貨"
+     * Get the name of commodity. E.g. "臺指期貨"
      *
      * @return string
      */
     public function getCommodity()
     {
-        return $this->info[1];
+        $commodity = Str::replaceFirst("台", "臺", $this->info[1]);
+
+        if (Str::is("臺股期貨", $commodity)) {
+            return "臺指期貨";
+        }
+
+        return $commodity;
     }
 
     /**
-     * Get the institution type. E.g. "外資及陸資"
+     * Get the institution type. E.g. "外資"
      *
      * @return string
      */
     public function getInstitution()
+    {
+        $institution = $this->getInstitutionOrigin();
+
+        if ($alias = Arr::get($this->institutionAlias, $institution)) {
+            return $alias;
+        }
+
+        return $institution;
+    }
+
+    /**
+     * Get the origin unmodified institution type. E.g. "外資及陸資"
+     *
+     * @return string
+     */
+    public function getInstitutionOrigin()
     {
         return $this->info[2];
     }
@@ -109,5 +141,16 @@ class TaifexInstitutionInfo
     public function getLongShortNetOpenInterest()
     {
         return (int) $this->info[13];
+    }
+
+    /**
+     * Get the identifier. This indicates if they are the same commodity and
+     * institution.
+     *
+     * @return string
+     */
+    public function getIdentifier()
+    {
+        return md5($this->getCommodity() . $this->getInstitution());
     }
 }
