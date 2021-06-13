@@ -2,20 +2,13 @@
 
 namespace App\Quote\Options;
 
+use App\Normalizer\Taifex\CommodityNormalizer;
+use App\Normalizer\Taifex\InstitutionNormalizer;
 use Carbon\Carbon;
-use Illuminate\Support\Arr;
 use Illuminate\Support\Str;
 
 class TaifexInstitutionInfo
 {
-    /**
-     * @var array<string,string>
-     */
-    protected $institutionAlias = [
-        "外資及陸資" => "外資",
-        "自營商" => "自營",
-    ];
-
     /**
      * @var string[]
      */
@@ -48,13 +41,7 @@ class TaifexInstitutionInfo
      */
     public function getCommodity()
     {
-        $commodity = Str::replaceFirst("台", "臺", $this->info[1]);
-
-        if (Str::is("臺股期貨", $commodity)) {
-            return "臺指期貨";
-        }
-
-        return $commodity;
+        return CommodityNormalizer::normalize($this->info[1]);
     }
 
     /**
@@ -64,13 +51,7 @@ class TaifexInstitutionInfo
      */
     public function getInstitution()
     {
-        $institution = $this->getInstitutionOrigin();
-
-        if ($alias = Arr::get($this->institutionAlias, $institution)) {
-            return $alias;
-        }
-
-        return $institution;
+        return InstitutionNormalizer::normalize($this->getInstitutionOrigin());
     }
 
     /**
