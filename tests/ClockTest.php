@@ -35,7 +35,6 @@ class ClockTest extends TestCase
      *           ["2021-06-05 10:30", "2021-06-04"]
      *           ["2021-06-06 10:30", "2021-06-04"]
      *           ["2021-06-07 10:30", "2021-06-07"]
-     *
      */
     public function test_should_get_current_trading_day($now, $expected)
     {
@@ -47,6 +46,28 @@ class ClockTest extends TestCase
 
         $this->assertEquals($expected, $this->target->getCurrentTradingDay()->format('Y-m-d'));
     }
+
+    /**
+     * @testWith ["2021-06-14 10:30", "2021-06-11"]
+     *           ["2021-06-15 10:30", "2021-06-11"]
+     *           ["2021-06-16 10:30", "2021-06-16"]
+     */
+    public function test_getCurrentTradingDay_should_deal_with_trading_holiday($now, $expected)
+    {
+        /**
+         * 2021-06-14 is Monday
+         * 2021-06-15 is Tuesday
+         */
+        $this->target->setNow($now);
+
+        $this->target->setTradingHolidays([
+            new CarbonImmutable('2021-06-14', new \DateTimeZone('Asia/Taipei')),
+            new CarbonImmutable('2021-06-15', new \DateTimeZone('Asia/Taipei')),
+        ]);
+
+        $this->assertEquals($expected, $this->target->getCurrentTradingDay()->format('Y-m-d'));
+    }
+
 
     /**
      * @testWith ["2021-06-03 10:30", "2021-06-02"]
@@ -67,5 +88,54 @@ class ClockTest extends TestCase
         $this->target->setNow($now);
 
         $this->assertEquals($expected, $this->target->getLastTradingDay()->format('Y-m-d'));
+    }
+
+    /**
+     * @testWith ["2021-06-14 10:30", "2021-06-10"]
+     *           ["2021-06-15 10:30", "2021-06-10"]
+     *           ["2021-06-16 10:30", "2021-06-11"]
+     */
+    public function test_getLastTradingDay_should_deal_with_trading_holiday($now, $expected)
+    {
+        /**
+         * 2021-06-14 is Monday
+         * 2021-06-15 is Tuesday
+         */
+        $this->target->setNow($now);
+
+        $this->target->setTradingHolidays([
+            new CarbonImmutable('2021-06-14', new \DateTimeZone('Asia/Taipei')),
+            new CarbonImmutable('2021-06-15', new \DateTimeZone('Asia/Taipei')),
+        ]);
+
+        $this->assertEquals($expected, $this->target->getLastTradingDay()->format('Y-m-d'));
+    }
+
+    public function test_is_trading_holiday_should_be_true()
+    {
+        $givenTradingHoliday = [
+            /** 2021-06-14 is Monday*/
+            new CarbonImmutable('2021-06-14'),
+        ];
+
+        $givenDate = new CarbonImmutable('2021-06-14');
+
+        $this->target->setTradingHolidays($givenTradingHoliday);
+
+        $this->assertTrue($this->target->isTradingHoliday($givenDate));
+    }
+
+    public function test_is_trading_holiday_should_be_false()
+    {
+        $givenTradingHoliday = [
+            /** 2021-06-14 is Monday*/
+            new CarbonImmutable('2021-06-14'),
+        ];
+
+        $givenDate = new CarbonImmutable('2021-06-15');
+
+        $this->target->setTradingHolidays($givenTradingHoliday);
+
+        $this->assertFalse($this->target->isTradingHoliday($givenDate));
     }
 }

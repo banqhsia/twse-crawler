@@ -2,7 +2,7 @@
 
 namespace App\Quote\Market;
 
-use Carbon\Carbon;
+use Carbon\CarbonImmutable;
 
 class TwseHolidayScheduleInfo
 {
@@ -47,7 +47,7 @@ class TwseHolidayScheduleInfo
         $taiwanDate = $this->schedule->Date;
         $date = $taiwanDate + 19110000;
 
-        return Carbon::createFromFormat(
+        return CarbonImmutable::createFromFormat(
             'Ymd', $date, new \DateTimeZone('Asia/Taipei')
         )->startOfDay();
     }
@@ -63,12 +63,22 @@ class TwseHolidayScheduleInfo
     }
 
     /**
-     * Determine if the the date is holiday.
+     * Determine if the date is holiday.
      *
      * @return bool
      */
     public function isHoliday()
     {
         return HolidayDetector::geuessIsHoliday($this);
+    }
+
+    /**
+     * Determine if the date is a trading day.
+     *
+     * @return bool
+     */
+    public function isTradingDay()
+    {
+        return !$this->isHoliday();
     }
 }

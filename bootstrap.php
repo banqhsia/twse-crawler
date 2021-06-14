@@ -1,11 +1,14 @@
 <?php
 
+use App\Client;
 use App\Clock;
 use App\Message\Envelope;
+use App\Provider\Market\TwseHolidayScheduleProvider;
 use App\Type\Value;
 use Illuminate\Cache\CacheManager;
 use Illuminate\Container\Container;
 use Illuminate\Filesystem\Filesystem;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Facade;
 use Longman\TelegramBot\Request as TelegramRequest;
 use Longman\TelegramBot\Telegram;
@@ -57,6 +60,24 @@ $container->singleton('files', Filesystem::class);
 $container->instance('cache', new CacheManager($container));
 
 Facade::setFacadeApplication($container);
+
+/**
+ * Ensure Clock::$tradingHolidays is exists.
+ */
+$clock = $container->get(Clock::class);
+$holidayKey = "twse:holiday:{$clock->getNow()->year}";
+
+$holidays = Cache::remember($holidayKey, $clock->getNow()->addWeeks(), function () use ($container) {
+    $schedules = $container->call(Client::class . "@get", [new TwseHolidayScheduleProvider]);
+
+    return collect($schedules)->reject(function ($schedule) {
+        return $schedule->isTradingDay();
+    })->transform(function ($schedule) {
+        return $schedule->getDate();
+    })->values()->all();
+});
+
+$clock->setTradingHolidays($holidays);
 
 /**
  * Custom helpers.

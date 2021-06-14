@@ -14,6 +14,6 @@ class HolidayDetector
      */
     public static function geuessIsHoliday(TwseHolidayScheduleInfo $schedule)
     {
-        return Str::endsWith($schedule->getDescription(), ["開始交易。", "最後交易。"]);
+        return !Str::endsWith($schedule->getDescription(), ["開始交易。", "最後交易。"]);
     }
 }

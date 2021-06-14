@@ -6,6 +6,7 @@ use Carbon\CarbonImmutable;
 use Carbon\CarbonInterface;
 use Carbon\CarbonTimeZone;
 use DateTimeZone;
+use Illuminate\Support\Arr;
 
 /**
  * @todo this class does not deal with non-trading day.
@@ -16,6 +17,11 @@ class Clock
      * @var CarbonImmutable
      */
     protected $now;
+
+    /**
+     * @var array<string,bool> [date => true]
+     */
+    protected $tradingHolidays = [];
 
     /**
      * Get now date time.
@@ -72,6 +78,38 @@ class Clock
     }
 
     /**
+     * Set the holidays.
+     *
+     * @param CarbonImmutable $tradingHolidays
+     * @return $this
+     */
+    public function setTradingHolidays($tradingHolidays)
+    {
+        $tradingHolidays = Arr::wrap($tradingHolidays);
+
+        $this->tradingHolidays = collect($tradingHolidays)->mapWithKeys(function ($date) {
+            return [$date->format('Y-m-d') => true];
+        })->all();
+
+        return $this;
+    }
+
+    /**
+     * Determine if the date is trading holiday.
+     *
+     * @param string|\DateTimeInterface|CarbonImmutable $date
+     * @return bool
+     */
+    public function isTradingHoliday($date)
+    {
+        if ($date instanceof \DateTimeInterface) {
+            $date = $date->format('Y-m-d');
+        }
+
+        return Arr::exists($this->tradingHolidays, $date);
+    }
+
+    /**
      * Get the current trading day. For example: if today Friday, the return
      * value will be Friday. If today is Sunday, the return value will be Friday
      * still.
@@ -82,11 +120,22 @@ class Clock
     {
         $now = $this->getNow();
 
-        if ($now->isWeekend()) {
-            return $now->subWeekdays();
+        while ($this->isHoliday($now)) {
+            $now = $now->subWeekdays();
         }
 
         return $now;
+    }
+
+    /**
+     * Determine if the date is holiday or trading holiday.
+     *
+     * @param CarbonImmutable $date
+     * @return bool
+     */
+    public function isHoliday(CarbonImmutable $date)
+    {
+        return $date->isWeekend() || $this->isTradingHoliday($date);
     }
 
     /**
@@ -98,6 +147,12 @@ class Clock
      */
     public function getLastTradingDay()
     {
-        return $this->getCurrentTradingDay()->subWeekdays();
+        $date = $this->getCurrentTradingDay()->subWeekdays();
+
+        while ($this->isHoliday($date)) {
+            $date = $date->subWeekdays();
+        }
+
+        return $date;
     }
 }
