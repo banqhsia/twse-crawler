@@ -12,7 +12,9 @@
         "symfony/var-dumper": "^5.0",
         "illuminate/container": "^6.7",
         "vlucas/phpdotenv": "^3.0",
-        "longman/telegram-bot": "^0.72.0"
+        "longman/telegram-bot": "^0.72.0",
+        "illuminate/cache": "^6.7",
+        "illuminate/filesystem": "^6.7"
     },
     "autoload": {
         "psr-4": {

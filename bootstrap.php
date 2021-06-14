@@ -1,6 +1,12 @@
 <?php
 
+use App\Clock;
+use App\Message\Envelope;
+use App\Type\Value;
+use Illuminate\Cache\CacheManager;
 use Illuminate\Container\Container;
+use Illuminate\Filesystem\Filesystem;
+use Illuminate\Support\Facades\Facade;
 use Longman\TelegramBot\Request as TelegramRequest;
 use Longman\TelegramBot\Telegram;
 
@@ -11,9 +17,21 @@ $dotenv->load();
 
 $container = Container::getInstance();
 
+$container->singleton(Clock::class, function () {
+    // CarbonImmutable::setTestNow('2021-06-10 16:00 +08:00');
+    return (new Clock)->touchNow();
+});
+
+/**
+ * Telegram Client bindings
+ */
 $container->when(Telegram::class)
     ->needs('$api_key')
     ->give(env('TELEGRAM_BOT_TOKEN'));
+
+$container->when(Envelope::class)
+    ->needs('$receiver')
+    ->give(env('TELEGRAM_CHAT_ID'));
 
 $container->singleton(TelegramRequest::class, function () use ($container) {
     $request = new TelegramRequest;
@@ -21,3 +39,35 @@ $container->singleton(TelegramRequest::class, function () use ($container) {
 
     return $request;;
 });
+
+/**
+ * Application config bindings.
+ */
+$container->singleton('config', function () {
+    return [
+        'cache.default' => 'files',
+        'cache.stores.files' => [
+            'driver' => 'file',
+            'path' => __DIR__ . '/cache',
+        ],
+    ];
+});
+
+$container->singleton('files', Filesystem::class);
+$container->instance('cache', new CacheManager($container));
+
+Facade::setFacadeApplication($container);
+
+/**
+ * Custom helpers.
+ */
+/**
+ * Create a Value instance.
+ *
+ * @param int|float $value
+ * @return Value
+ */
+function v($value)
+{
+    return Value::make($value);
+}
