@@ -138,4 +138,104 @@ class ClockTest extends TestCase
 
         $this->assertFalse($this->target->isTradingHoliday($givenDate));
     }
+
+    /**
+     * @testWith ["2021-06-02", "2021-06-09"]
+     *           ["2021-06-03", "2021-06-09"]
+     *           ["2021-06-04", "2021-06-09"]
+     *           ["2021-06-05", "2021-06-09"]
+     *           ["2021-06-06", "2021-06-09"]
+     *           ["2021-06-07", "2021-06-09"]
+     *           ["2021-06-08", "2021-06-09"]
+     *           ["2021-06-09", "2021-06-17"]
+     *           ["2021-06-10", "2021-06-17"]
+     *           ["2021-06-11", "2021-06-17"]
+     *           ["2021-06-12", "2021-06-17"]
+     *           ["2021-06-13", "2021-06-17"]
+     *           ["2021-06-14", "2021-06-17"]
+     *           ["2021-06-15", "2021-06-17"]
+     *           ["2021-06-16", "2021-06-17"]
+     *           ["2021-06-17", "2021-06-23"]
+     */
+    public function test_getWeeklyClearingDay($now, $expected)
+    {
+        $this->target->setNow($now);
+
+        /**
+         * 2021-06-16 is Wednesday
+         */
+        $this->target->setTradingHolidays([
+            new CarbonImmutable('2021-06-16', new \DateTimeZone('Asia/Taipei')),
+        ]);
+
+        $expected = CarbonImmutable::parse($expected, $this->timezone);
+
+        $this->assertEquals($expected, $this->target->getWeeklyClearingDay());;
+    }
+
+
+    /**
+     * @testWith ["2021-05-31", "2021-06-16"]
+     *           ["2021-06-01", "2021-06-16"]
+     *           ["2021-06-04", "2021-06-16"]
+     *           ["2021-06-09", "2021-06-16"]
+     *           ["2021-06-15", "2021-06-16"]
+     *           ["2021-06-16", "2021-07-21"]
+     *           ["2021-06-17", "2021-07-21"]
+     *           ["2021-06-22", "2021-07-21"]
+     *           ["2021-06-23", "2021-07-21"]
+     *           ["2021-06-24", "2021-07-21"]
+     *           ["2021-06-25", "2021-07-21"]
+     *           ["2021-06-30", "2021-07-21"]
+     *           ["2021-07-01", "2021-07-21"]
+     *           ["2021-07-20", "2021-07-21"]
+     *           ["2021-07-21", "2021-08-18"]
+     *           ["2021-07-22", "2021-08-18"]
+     *           ["2021-07-23", "2021-08-18"]
+     */
+    public function test_getMonthlyClearingDay($now, $expected)
+    {
+        $this->target->setNow($now);
+
+        $expected = CarbonImmutable::parse($expected, $this->timezone);
+
+        $this->assertEquals($expected, $this->target->getMonthlyClearingDay());;
+    }
+
+    /**
+     * @testWith ["2021-05-31", "2021-06-17"]
+     *           ["2021-06-01", "2021-06-17"]
+     *           ["2021-06-04", "2021-06-17"]
+     *           ["2021-06-09", "2021-06-17"]
+     *           ["2021-06-15", "2021-06-17"]
+     *           ["2021-06-16", "2021-06-17"]
+     *           ["2021-06-17", "2021-07-21"]
+     *           ["2021-06-22", "2021-07-21"]
+     *           ["2021-06-23", "2021-07-21"]
+     *           ["2021-06-24", "2021-07-21"]
+     *           ["2021-06-25", "2021-07-21"]
+     *           ["2021-06-30", "2021-07-21"]
+     *           ["2021-07-01", "2021-07-21"]
+     *           ["2021-07-20", "2021-07-21"]
+     *           ["2021-07-21", "2021-08-18"]
+     *           ["2021-07-22", "2021-08-18"]
+     *           ["2021-07-23", "2021-08-18"]
+     */
+    public function test_getMonthlyClearingDay_with_trading_holidays($now, $expected)
+    {
+        $this->target->setNow($now);
+
+        /**
+         * 2021-06-16 is the 3rd Wednesday of June
+         */
+        $this->target->setTradingHolidays([
+            new CarbonImmutable('2021-06-16', new \DateTimeZone('Asia/Taipei')),
+        ]);
+
+        $expected = CarbonImmutable::parse($expected, $this->timezone);
+
+        $this->assertEquals($expected, $this->target->getMonthlyClearingDay());;
+    }
+
+
 }

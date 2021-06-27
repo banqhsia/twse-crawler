@@ -118,13 +118,9 @@ class Clock
      */
     public function getCurrentTradingDay()
     {
-        $now = $this->getNow();
-
-        while ($this->isHoliday($now)) {
-            $now = $now->subWeekdays();
-        }
-
-        return $now;
+        return $this->lookingForTradingDay($this->getNow(), function ($date) {
+            return $date->subWeekdays();
+        });
     }
 
     /**
@@ -149,10 +145,79 @@ class Clock
     {
         $date = $this->getCurrentTradingDay()->subWeekdays();
 
+        return $this->lookingForTradingDay($date, function ($date) {
+            return $date->subWeekdays();
+        });
+    }
+
+    /**
+     * Looking for a nearest trading day using the closure until the trading day
+     * is found.
+     *
+     * @param CarbonImmutable $date
+     * @param \Closure $findUsing
+     * @return CarbonImmutable
+     */
+    protected function lookingForTradingDay(CarbonImmutable $date, \Closure $findUsing)
+    {
         while ($this->isHoliday($date)) {
-            $date = $date->subWeekdays();
+            $date = $findUsing($date);
         }
 
         return $date;
+    }
+
+    /**
+     * Get the weekly clearing day for futures. Default sets to Wednesday every
+     * week.
+     *
+     * @return CarbonImmutable
+     */
+    public function getWeeklyClearingDay()
+    {
+        $date = $this->getNow();
+
+        $findUsing = function ($date) {
+            return $date->addWeekdays();
+        };
+
+        if ($date->isWednesday() && $this->isTradingHoliday($date)) {
+            return $this->lookingForTradingDay($date, $findUsing);
+        }
+
+        return $this->lookingForTradingDay(
+            $date->next(CarbonImmutable::WEDNESDAY), $findUsing
+        );
+    }
+
+    /**
+     * Get the monthly clearing day for futures/options. Default sets to the
+     * third Wednesday of every month.
+     *
+     * @return CarbonImmutable
+     */
+    public function getMonthlyClearingDay()
+    {
+        $date = $this->getNow();
+
+        $findUsing = function ($date) {
+            return $date->addWeekdays();
+        };
+
+        /**
+         * Ensure clearing day of this month is a valid trading day.
+         */
+        $clearingDay = $this->lookingForTradingDay(
+            $date->modify('third wednesday of this month'), $findUsing
+        );
+
+        /**
+         * Shift a month if the date is after or equal clearing day.
+         */
+        if ($date->isSameMonth($clearingDay) && $date->gte($clearingDay)) {
+            $clearingDay = $date->modify('third wednesday of next month');
+        }
+
+        return $this->lookingForTradingDay($clearingDay, $findUsing);
     }
 }
