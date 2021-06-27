@@ -5,7 +5,6 @@ namespace App\Quote\Options;
 use App\Normalizer\Taifex\CommodityNormalizer;
 use App\Normalizer\Taifex\InstitutionNormalizer;
 use Carbon\Carbon;
-use Illuminate\Support\Str;
 
 class TaifexInstitutionInfo
 {
@@ -42,6 +41,17 @@ class TaifexInstitutionInfo
     public function getCommodity()
     {
         return CommodityNormalizer::normalize($this->info[1]);
+    }
+
+    /**
+     * Determine if the commodity is one of the given names.
+     *
+     * @param string[] $commodities
+     * @return bool
+     */
+    public function commodityIs(array $commodities = [])
+    {
+        return in_array($this->getCommodity(), $commodities);
     }
 
     /**

@@ -2,12 +2,14 @@
 
 namespace App\Provider\Options;
 
+use App\Provider\Filter\Filterable;
+use App\Provider\Filter\Taifex\CommodityFilter;
 use App\Provider\Optionable;
 use App\Quote\Options\TaifexInstitutionInfo;
 use Carbon\CarbonPeriod;
 use Psr\Http\Message\ResponseInterface;
 
-class TaifexInstitutionProvider implements Optionable
+class TaifexInstitutionProvider implements Optionable, Filterable
 {
     const URL_BASE = 'https://www.taifex.com.tw/cht/3/futContractsDateDown';
 
@@ -20,6 +22,29 @@ class TaifexInstitutionProvider implements Optionable
      * @var CarbonPeriod
      */
     private $period;
+
+    /**
+     * @var CommodityFilter
+     */
+    private $filter;
+
+    /**
+     * Construct.
+     *
+     * @param CommodityFilter $filter
+     */
+    public function __construct(CommodityFilter $filter)
+    {
+        $this->filter = $filter;
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    public function getFilter(): callable
+    {
+        return $this->filter;
+    }
 
     /**
      * Set the symbol.

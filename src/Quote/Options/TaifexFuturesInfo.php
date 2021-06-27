@@ -53,6 +53,17 @@ class TaifexFuturesInfo
     }
 
     /**
+     * Determine if the expiration is the given string.
+     *
+     * @param string $expiration
+     * @return bool
+     */
+    public function expirationIs($expiration)
+    {
+        return $this->getExpiration() === $expiration;
+    }
+
+    /**
      * Get the open price.
      *
      * @return int
@@ -161,6 +172,17 @@ class TaifexFuturesInfo
     public function getTradingPeriod()
     {
         return $this->info[17];
+    }
+
+    /**
+     * Determine if the trading period is the given period.
+     *
+     * @param string $period
+     * @return bool
+     */
+    public function tradingPeriodIs($period)
+    {
+        return $this->getTradingPeriod() === $period;
     }
 
     /**

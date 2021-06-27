@@ -2,12 +2,23 @@
 
 namespace App\Provider\Options;
 
+use App\Provider\Filter\Filterable;
 use App\Quote\Options\TaifexPutCallRatioInfo;
 use Psr\Http\Message\ResponseInterface;
 
-class TaifexPutCallRatioProvider
+class TaifexPutCallRatioProvider implements Filterable
 {
     const URL_BASE = 'https://www.taifex.com.tw/cht/3/pcRatioDown';
+
+    /**
+     * {@inheritDoc}
+     */
+    public function getFilter(): callable
+    {
+        return function ($result) {
+            return $result->first();
+        };
+    }
 
     /**
      * Get the result processing function.

@@ -2,13 +2,16 @@
 
 namespace App\Provider\Options;
 
+use App\Provider\Filter\Filterable;
+use App\Provider\Filter\Taifex\MonthlyFuturesFilter;
 use App\Provider\Optionable;
 use App\Quote\Options\TaifexFuturesInfo;
 use Carbon\CarbonImmutable;
 use Carbon\CarbonPeriod;
+use DeepCopy\Filter\Filter;
 use Psr\Http\Message\ResponseInterface;
 
-class TaifexFuturesProvider implements Optionable
+class TaifexFuturesProvider implements Optionable, Filterable
 {
     const URL_BASE = 'https://www.taifex.com.tw/cht/3/futDataDown';
     const DOWN_TYPE = 1;
@@ -22,6 +25,29 @@ class TaifexFuturesProvider implements Optionable
      * @var string
      */
     private $symbol;
+
+    /**
+     * @var MonthlyFuturesFilter
+     */
+    private $filter;
+
+    /**
+     * Construct.
+     *
+     * @param MonthlyFuturesFilter $filter
+     */
+    public function __construct(MonthlyFuturesFilter $filter)
+    {
+        $this->filter = $filter;
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    public function getFilter(): callable
+    {
+        return $this->filter;
+    }
 
     /**
      * Set the date period of the query.

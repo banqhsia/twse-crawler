@@ -2,6 +2,8 @@
 
 namespace App\Message;
 
+use Illuminate\Container\Container;
+
 class Envelope
 {
     /**
@@ -67,5 +69,12 @@ class Envelope
     public function getMessage()
     {
         return $this->message;
+    }
+
+    public static function encapsulate(Message $message)
+    {
+        return Container::getInstance()->makeWith(static::class, [
+            'message' => $message,
+        ]);
     }
 }
