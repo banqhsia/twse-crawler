@@ -100,7 +100,7 @@ class DailyReportController
             new Message($transformer->transform())
         );
 
-        dd($pigeon->send($envelope));
+        return $pigeon->send($envelope);
     }
 
     /**
