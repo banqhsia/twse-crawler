@@ -80,7 +80,7 @@ class DailyReportTransformer
         開盤 `{tx_open_price}`
         收盤 `{tx_close_price}` (`{tx_increase_price}`, `{tx_increase_percentage}%`)
         高低 `{tx_highest_price}` / `{tx_lowest_price}` (幅 `{tx_range}`)
-        現貨 `{tse_close_price}` (價差 {diff_stock_futures})
+        現貨 `{tse_close_price}` (價差 `{diff_stock_futures}`)
 
         {futures_institution_commodities}
         TEMPLATE;
