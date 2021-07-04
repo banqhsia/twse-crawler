@@ -78,11 +78,12 @@ class Value
     /**
      * Get the formatted value.
      *
+     * @param int $decimals
      * @return string
      */
-    public function formatted()
+    public function formatted(int $decimals = 0)
     {
-        return number_format($this->value);
+        return number_format($this->value, $decimals);
     }
 
     /**

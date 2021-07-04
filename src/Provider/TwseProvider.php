@@ -6,7 +6,7 @@ use App\Quote\TwseStockInfo;
 use App\Symbol;
 use Psr\Http\Message\ResponseInterface;
 
-class TwseProvider
+class TwseProvider implements DateUnaware
 {
     const URL_BASE = 'https://mis.twse.com.tw/stock/api/getStockInfo.jsp';
 

@@ -11,6 +11,9 @@ use App\Provider\Filter\Filterable;
 use App\Provider\Options\TaifexFuturesProvider;
 use App\Provider\Options\TaifexInstitutionProvider;
 use App\Provider\Options\TaifexPutCallRatioProvider;
+use App\Provider\Securities\TwseInformationProvider;
+use App\Provider\TwseProvider;
+use App\Symbol;
 use App\Transformer\DailyReportTransformer;
 use Illuminate\Container\Container;
 
@@ -51,6 +54,21 @@ class DailyReportController
 
         $previousDay = $this->clock->getLastTradingDay();
         $currentDay = $this->clock->getCurrentTradingDay();
+
+        // TWSE index
+        $codes = Symbol::createSymbolsFromEnvString('tse.t00');
+        $twseIndex = (new TwseProvider)->setSymbols($codes);
+
+        $transformer->setTwseIndex(
+            $this->request($twseIndex)->first()
+        );
+
+        // TWSE market information
+        $twseInfo = $container->get(TwseInformationProvider::class);
+
+        $transformer->setTwseInfo(
+            $this->request($twseInfo)->first()
+        );
 
         // TAIFEX Futures
         $futures = $container->get(TaifexFuturesProvider::class)

@@ -73,6 +73,16 @@ class TwseStockInfo implements StockInfo
     }
 
     /**
+     * 取得收盤價
+     *
+     * @return string
+     */
+    public function getClosePrice()
+    {
+        return $this->retrieveInfo('z');
+    }
+
+    /**
      * 取得昨日收盤價
      *
      * @return string
@@ -101,7 +111,7 @@ class TwseStockInfo implements StockInfo
      */
     public function getIncreasePrice()
     {
-        return (float) $this->getPrice() - $this->getYesterdayClosePrice();
+        return round($this->getPrice() - $this->getYesterdayClosePrice(), 2, PHP_ROUND_HALF_UP);
     }
 
     /**
