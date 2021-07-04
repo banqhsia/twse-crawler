@@ -1,11 +1,14 @@
 # twse-crawler
 台股即時交易爬蟲 / 盤後資訊日報
 
+![screensoht](https://user-images.githubusercontent.com/4393788/124380370-e8250700-dcee-11eb-9a42-c62c5e82237a.png)
+
 ## Installation
 1. `$ git clone git@github.com:banqhsia/twse-crawler.git`
 1. `$ composer install`
 1. `$ cp .env.example .env` (以及編輯 `.env` 裡面的設定)
 1. `$ php daily_report.php`
+
 
 ## 使用說明
 * 在 .env 裡面可以設定要將 daily report 廣播到的 telegram 及使用的 bot 帳號
@@ -32,7 +35,7 @@
 | 買價最佳五檔 | buy fifth order |
 | 賣價最佳五檔 | ask fifth order |
 
-## 期貨/選擇權
+### 期貨/選擇權
 | 中文 | 英文 | 附註 |
 | --- | --- | --- |
 | 商品名稱 | commodity | 例：臺指期貨/小型臺指期貨 |
@@ -49,7 +52,7 @@
 ### 法人機構
 | 中文 | 英文 | 附註 |
 | --- | --- | --- |
-| 法人/機構 | institution | 例：外資/投信/
+| 法人/機構 | institution | 例：外資/投信/自營
 
 ### 用字統一
 * 「台」字皆已統一為「臺」

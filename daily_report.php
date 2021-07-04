@@ -4,4 +4,6 @@ require __DIR__ . "/bootstrap.php";
 
 use App\Controller\DailyReportController;
 
-$container->call(DailyReportController::class . '@sendDailyReport');
+$response = $container->call(DailyReportController::class . '@sendDailyReport');
+
+echo $response->toJson();

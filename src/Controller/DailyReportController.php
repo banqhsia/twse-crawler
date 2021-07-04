@@ -93,7 +93,7 @@ class DailyReportController
         $pcRatio = new TaifexPutCallRatioProvider;
 
         $transformer->setPutCallRatioInfo(
-            $this->request($pcRatio),
+            $this->request($pcRatio)
         );
 
         $envelope = Envelope::encapsulate(
