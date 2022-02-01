@@ -148,10 +148,10 @@ class DailyReportTransformer
                             'long_short_net_oi' => v($c->getCurrentTradingDayInfo()->getLongShortNetOpenInterest()),
                             'long_short_net_volume_compared_with_yesterday' => v($c->getCurrentTradingDayInfo()->getLongShortNetVolume())
                                 ->sub($c->getLastTradingDayInfo()->getLongShortNetVolume())
-                                ->indicated(),
+                                ->signed(),
                             'long_short_net_oi_compared_with_yesterday' => v($c->getCurrentTradingDayInfo()->getLongShortNetOpenInterest())
                                 ->sub($c->getLastTradingDayInfo()->getLongShortNetOpenInterest())
-                                ->indicated(),
+                                ->signed(),
                         ]);
                     })->join("\n"),
                 ]);

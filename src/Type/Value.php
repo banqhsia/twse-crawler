@@ -54,6 +54,24 @@ class Value
     }
 
     /**
+     * Get the value with sign indicator prepend.
+     *
+     * For example:  15 will return +15
+     *              -15 will return -15
+     *                0 will return   0
+     *
+     * @return string
+     */
+    public function signed()
+    {
+        if ($this->value > 0) {
+            return "+" . $this->value;
+        }
+
+        return $this->value;
+    }
+
+    /**
      * Get the absolute value.
      *
      * @return int|float
