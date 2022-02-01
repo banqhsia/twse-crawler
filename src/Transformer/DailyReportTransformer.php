@@ -3,14 +3,14 @@
 namespace App\Transformer;
 
 use App\Clock;
-use App\Type\ChineseUnitValue;;
 use App\Quote\Futures\TaifexInstitutionCommodity;
+use App\Quote\Futures\TaifexInstitutionCommodityCollection;
 use App\Quote\Options\TaifexFuturesInfo;
 use App\Quote\Options\TaifexPutCallRatioInfo;
 use App\Quote\TwseStockInfo;
 use App\Quote\Twse\TwseInformationInfo;
 use App\Template\Builder;
-use Illuminate\Support\Arr;
+use App\Type\ChineseUnitValue;
 
 class DailyReportTransformer
 {
@@ -35,9 +35,9 @@ class DailyReportTransformer
     private $twseInfo;
 
     /**
-     * @var TaifexInstitutionCommodity[]
+     * @var TaifexInstitutionCommodityCollection
      */
-    private $institutionCommodities = [];
+    private $institutionCommodities;
 
     /**
      * Construct.
@@ -135,36 +135,27 @@ class DailyReportTransformer
         {institution} // `{long_short_net_volume}` (`{long_short_net_volume_compared_with_yesterday}`) // `{long_short_net_oi}` (`{long_short_net_oi_compared_with_yesterday}`)
         TEMPLATE;
 
-        $institutionCommodities = collect($this->institutionCommodities)->groupBy->getCommodity();
-
-        $result = [];
-        foreach ($institutionCommodities as $commodity => $institutionCommodities) {
-            $institutionResult = collect($institutionCommodities)
-                ->transform(function (TaifexInstitutionCommodity $c) use ($institutionTemplate) {
-
-                    $today = $c->getCurrentTradingDayInfo();
-                    $yesterday = $c->getLastTradingDayInfo();
-
-                    return Builder::template($institutionTemplate)->build([
-                        'institution' => $c->getInstitution(),
-                        'long_short_net_volume' => v($today->getLongShortNetVolume()),
-                        'long_short_net_oi' => v($today->getLongShortNetOpenInterest()),
-                        'long_short_net_volume_compared_with_yesterday' => v($today->getLongShortNetVolume())
-                            ->sub($yesterday->getLongShortNetVolume())
-                            ->indicated(),
-                        'long_short_net_oi_compared_with_yesterday' => v($today->getLongShortNetOpenInterest())
-                            ->sub($yesterday->getLongShortNetOpenInterest())
-                            ->indicated(),
-                    ]);
-                })->join("\n");
-
-            $result[] = Builder::template($commodityTemplate)->build([
-                'commodity' => $commodity,
-                'institution_template' => $institutionResult,
-            ]);
-        }
-
-        return implode("\n", $result);
+        return $this->institutionCommodities
+            ->prioritizeInstitution()
+            ->groupByCommodity()
+            ->transform(function ($institutionCommodities, $commodity) use ($commodityTemplate, $institutionTemplate) {
+                return Builder::template($commodityTemplate)->build([
+                    'commodity' => $commodity,
+                    'institution_template' => $institutionCommodities->map(function (TaifexInstitutionCommodity $c) use ($institutionTemplate) {
+                        return Builder::template($institutionTemplate)->build([
+                            'institution' => $c->getInstitution(),
+                            'long_short_net_volume' => v($c->getCurrentTradingDayInfo()->getLongShortNetVolume()),
+                            'long_short_net_oi' => v($c->getCurrentTradingDayInfo()->getLongShortNetOpenInterest()),
+                            'long_short_net_volume_compared_with_yesterday' => v($c->getCurrentTradingDayInfo()->getLongShortNetVolume())
+                                ->sub($c->getLastTradingDayInfo()->getLongShortNetVolume())
+                                ->indicated(),
+                            'long_short_net_oi_compared_with_yesterday' => v($c->getCurrentTradingDayInfo()->getLongShortNetOpenInterest())
+                                ->sub($c->getLastTradingDayInfo()->getLongShortNetOpenInterest())
+                                ->indicated(),
+                        ]);
+                    })->join("\n"),
+                ]);
+            })->implode("\n");
     }
 
     public function setPutCallRatioInfo(TaifexPutCallRatioInfo $putCallRatioInfo)
@@ -195,12 +186,9 @@ class DailyReportTransformer
         return $this;
     }
 
-    public function setInstitutionCommodity($institutionCommodities)
+    public function setInstitutionCommodities(TaifexInstitutionCommodityCollection $institutionCommodities)
     {
-        $this->institutionCommodities = array_merge(
-            $this->institutionCommodities,
-            Arr::wrap($institutionCommodities)
-        );
+        $this->institutionCommodities = $institutionCommodities;
 
         return $this;
     }

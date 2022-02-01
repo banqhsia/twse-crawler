@@ -13,6 +13,7 @@ use App\Provider\Options\TaifexInstitutionProvider;
 use App\Provider\Options\TaifexPutCallRatioProvider;
 use App\Provider\Securities\TwseInformationProvider;
 use App\Provider\TwseProvider;
+use App\Quote\Futures\TaifexInstitutionCommodityCollection;
 use App\Symbol;
 use App\Transformer\DailyReportTransformer;
 use Illuminate\Container\Container;
@@ -85,8 +86,8 @@ class DailyReportController
                 $previousDay->toPeriod($currentDay)
             );
 
-        $transformer->setInstitutionCommodity(
-            $this->request($commodity)
+        $transformer->setInstitutionCommodities(
+            TaifexInstitutionCommodityCollection::make($this->request($commodity))
         );
 
         // TAIFEX put call ratio (P/C ratio)
